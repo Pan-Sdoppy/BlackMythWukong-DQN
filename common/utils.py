@@ -11,9 +11,9 @@ import numpy as np
 import pyautogui
 import torch
 from PIL import Image
-from torch import Tensor
 from torchvision import transforms
 
+import common.nn
 from common import constants
 
 
@@ -32,7 +32,7 @@ class ReplayBuffer:
     def __init__(self, capacity: int):
         self.buffer = collections.deque(maxlen=capacity)
 
-    def add(self, state: Tensor, action: int, reward: int, next_state: Tensor, done: bool):
+    def add(self, state: torch.Tensor, action: int, reward: int, next_state: torch.Tensor, done: int):
         """
         往经验池缓冲池中添加历史经验
         :param state: 模型输入
@@ -43,7 +43,7 @@ class ReplayBuffer:
         """
         self.buffer.append((state, action, reward, next_state, done))
 
-    def sample(self, batch_size: int) -> Tuple[Tensor, int, int, Tensor, bool]:
+    def sample(self, batch_size: int) -> Tuple[torch.Tensor, int, int, torch.Tensor, int]:
         """
         在经验池缓冲池中随机采样
         :param batch_size: 一次采样批大小
@@ -61,7 +61,7 @@ class ReplayBuffer:
         return len(self.buffer)
 
 
-def save_model(model, path):
+def save_model(model: common.nn.CNN, path: str):
     """
     保存模型
     :param model: 模型
@@ -70,7 +70,7 @@ def save_model(model, path):
     torch.save(model.state_dict(), path)
 
 
-def load_model(model, path):
+def load_model(model: common.nn.CNN, path: str):
     """
     导入模型权重
     :param model: 模型
@@ -99,7 +99,7 @@ def read_img(img_path: str) -> np.ndarray:
     return img
 
 
-def get_blood_img(img, self_mode=1) -> np.ndarray:
+def get_blood_img(img: np.ndarray, self_mode: bool = True) -> np.ndarray:
     """
     获取血量截图
     :param img: 图片数据
@@ -152,7 +152,7 @@ def get_blood_value(roi_img: np.ndarray, denominator: int) -> int:
     return int(round((max_x / denominator), 2) * 100)
 
 
-def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, next_boss_blood: int) -> Tuple[int, bool]:
+def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, next_boss_blood: int) -> Tuple[int, int]:
     """
     计算奖励分数
     :param self_blood: 行动前自己血量
@@ -162,7 +162,7 @@ def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, nex
     :return: 奖励分数
     """
     reward = 0
-    done = False
+    done = 0
     # 突然大量回血代表回合结束
     if next_self_blood - self_blood > 70:
         # 回血前玩家血量少于13%判负
@@ -170,14 +170,14 @@ def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, nex
             reward -= 40
         else:
             reward += 40
-        done = True
+        done = 1
     # 防止有时候玩家回血事件没被捕捉到
     elif next_boss_blood - boss_blood > 70:
         if boss_blood <= 13:
             reward -= 40
         else:
             reward += 40
-        done = True
+        done = 1
     else:
         if (self_blood - next_self_blood) > 0:
             reward -= (self_blood - next_self_blood)
@@ -266,7 +266,7 @@ def take_action(action: int, n_light_attack: int, time_delay_flag: bool, resolut
         raise ValueError("检查模型输出尺寸")
 
 
-def img_to_state(img: np.ndarray) -> Tensor:
+def img_to_state(img: np.ndarray) -> torch.Tensor:
     """
     把图像转成模型可接受的状态输入类型
     :param img: 截屏图像
