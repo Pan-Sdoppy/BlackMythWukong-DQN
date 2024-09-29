@@ -16,6 +16,7 @@ BOSS_BLOOD_W = 578
 BOSS_BLOOD_H = 8
 BOSS_BLOOD_LEN = 578
 # --------------------------- 训练参数 ---------------------------
+EPOCH = 50
 # 经验缓冲池容量
 BUFFER_CAPACITY = 100
 # 学习率
@@ -30,9 +31,9 @@ TARGET_UPDATE_FREQUENCY = 30
 BATCH_SIZE = 16
 # 经验池最小训练大小
 BUFFER_MIN_SIZE = 30
-# 行动数
-N_HIDDEN = 64 * 35 * 35
+# 行为数
 N_ACTIONS = 5
+N_HIDDEN = 64 * 35 * 35
 LIGHT_ATTACK_TIME_SLEEP_DICT = {
     1: [0.40, 0.00],
     2: [0.80, 0.25],

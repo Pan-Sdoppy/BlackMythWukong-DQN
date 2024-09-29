@@ -18,7 +18,7 @@ from common import constants
 
 
 class Action(Enum):
-    """行动枚举类"""
+    """行为枚举类"""
     DODGE = 0
     LIGHT_ATTACK = 1
     HEAVY_ATTACK = 2
@@ -67,6 +67,11 @@ def save_model(model: common.nn.CNN, path: str):
     :param model: 模型
     :param path: 保存路径
     """
+    path_obj = Path(path)
+    parent_dir = path_obj.parent
+    # 如果父目录不存在，则创建它
+    if not parent_dir.exists():
+        parent_dir.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), path)
 
 
@@ -127,8 +132,8 @@ def get_game_screenshot() -> np.ndarray:
         # 将截图转换为OpenCV格式
         img = np.array(screenshot)
         # OpenCV默认使用BGR颜色空间，mss返回的是BGRA，
-        # 因此需要去掉alpha通道
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+        # 因此需要去掉alpha通道n
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
     return img
 
 
@@ -155,10 +160,10 @@ def get_blood_value(roi_img: np.ndarray, denominator: int) -> int:
 def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, next_boss_blood: int) -> Tuple[int, int]:
     """
     计算奖励分数
-    :param self_blood: 行动前自己血量
-    :param next_self_blood: 行动后自己血量
-    :param boss_blood: 行动前敌人血量
-    :param next_boss_blood: 行动后敌人血量
+    :param self_blood: 行为前自己血量
+    :param next_self_blood: 行为后自己血量
+    :param boss_blood: 行为前敌人血量
+    :param next_boss_blood: 行为后敌人血量
     :return: 奖励分数
     """
     reward = 0
@@ -246,21 +251,21 @@ def jump_heavy_attack(time_delay_flag: bool):
 
 def take_action(action: int, n_light_attack: int, time_delay_flag: bool, resolute_strike: bool):
     """
-    模拟相应的行动
-    :param action: 行动枚举值
+    模拟相应的行为
+    :param action: 行为枚举值
     :param n_light_attack: 第几次轻棍连击
     :param time_delay_flag: 模型训练前后会有一定的操作延迟
     :param resolute_strike: 是否触发切手技
     """
-    if action == Action.LIGHT_ATTACK:
+    if action == Action.LIGHT_ATTACK.value:
         light_attack(time_delay_flag, n_light_attack)
-    elif action == Action.HEAVY_ATTACK:
+    elif action == Action.HEAVY_ATTACK.value:
         heavy_attack(time_delay_flag, resolute_strike)
-    elif action == Action.JUMP_LIGHT_ATTACK:
+    elif action == Action.JUMP_LIGHT_ATTACK.value:
         jump_light_attack(time_delay_flag)
-    elif action == Action.JUMP_HEAVY_ATTACK:
+    elif action == Action.JUMP_HEAVY_ATTACK.value:
         jump_heavy_attack(time_delay_flag)
-    elif action == Action.DODGE:
+    elif action == Action.DODGE.value:
         dodge(time_delay_flag)
     else:
         raise ValueError("检查模型输出尺寸")
@@ -272,7 +277,7 @@ def img_to_state(img: np.ndarray) -> torch.Tensor:
     :param img: 截屏图像
     :return: 转化后的tensor输入
     """
-    image_pil = Image.fromarray(img.astype('uint8'), 'BGR')
+    image_pil = Image.fromarray(img.astype('uint8'), 'RGB')
     transform = transforms.Compose([
         transforms.Resize((308, 308)),
         transforms.ToTensor(),
@@ -282,3 +287,59 @@ def img_to_state(img: np.ndarray) -> torch.Tensor:
     image = transform(image_pil)
     state = image.unsqueeze(0)
     return state
+
+
+def get_state_and_blood() -> Tuple[torch.Tensor, int, int]:
+    """
+    获取模型输入和血量信息
+    :return: 模型输入和血量信息
+    """
+    img = get_game_screenshot()
+    state = img_to_state(img)
+    self_blood_img = get_blood_img(img, self_mode=True)
+    self_blood = get_blood_value(self_blood_img, constants.SELF_BLOOD_LEN)
+    boss_blood_img = get_blood_img(img, self_mode=False)
+    boss_blood = get_blood_value(boss_blood_img, constants.BOSS_BLOOD_LEN)
+    return state, self_blood, boss_blood
+
+
+def train_dqn(agent: common.nn.DQN, replay_buffer: ReplayBuffer):
+    """
+    训练 DQN
+    :param agent: DQN 模型
+    :param replay_buffer: 经验缓冲池
+    """
+    if replay_buffer.size() > constants.BUFFER_MIN_SIZE:
+        # 开始出现操作延迟
+        time_delay_flag = True
+        # 从经验池中随机抽样作为训练集
+        states, actions, rewards, next_states, dones = replay_buffer.sample(constants.BATCH_SIZE)
+        # 构造训练集
+        transition_dict = {
+            'states': states,
+            'actions': actions,
+            'rewards': rewards,
+            'next_states': next_states,
+            'dones': dones,
+        }
+        # DQN训练
+        agent.train(transition_dict)
+
+
+def get_action_condition(action: int, n_light_attack: int) -> Tuple[int, bool]:
+    """
+    获取轻棍连击次数和是否使出切手技
+    :param action: 行为枚举值
+    :param n_light_attack: 轻棍连击次数
+    :return: 轻棍连击次数和是否使出切手技
+    """
+    resolute_strike = False
+    if action == Action.LIGHT_ATTACK:
+        # 轻棍连击数加一
+        n_light_attack += 1
+    else:
+        if n_light_attack > 0:
+            # 轻棍第五段无法打出切手技
+            if n_light_attack % 5 != 0:
+                resolute_strike = True
+    return n_light_attack, resolute_strike

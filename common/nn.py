@@ -51,13 +51,13 @@ class DQN:
 
     def choose_action(self, state: torch.Tensor, train_mode=True):
         """
-        根据当前状态选择行动
+        根据当前状态选择行为
         :param state: 模型输入
         :param train_mode: 训练模式
-        :return: 行动枚举值
+        :return: 行为枚举值
         """
         if train_mode:
-            # 只有训练模式以 1 - self.epsilon 的概率随机选择某一行动
+            # 只有训练模式以 1 - self.epsilon 的概率随机选择某一行为
             if np.random.random() > self.epsilon:
                 action = np.random.randint(self.n_actions)
                 return action

@@ -1,11 +1,12 @@
+import keyboard
 import torch
+from loguru import logger
 
 from common import constants
 from common.nn import DQN
-from common.utils import ReplayBuffer, load_model, get_game_screenshot, img_to_state, take_action
+from common.utils import ReplayBuffer, load_model, get_game_screenshot, img_to_state, get_action_condition, take_action
 
 if __name__ == '__main__':
-    # GPU运算
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     n_light_attack = 0
     time_delay_flag = False
@@ -22,21 +23,24 @@ if __name__ == '__main__':
                 )
     # 导入权重
     load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
-    # 测试模型
+    # 等待开始按键被按下
+    logger.info("按下'n'键开始")
     while True:
-        # 获取当前状态下需要采取的动作
-        resolute_strike = False
-        img = get_game_screenshot()
-        state = img_to_state(img)
-        action = agent.choose_action(state, train_mode=False)
-        if action == 1:
-            # 轻棍连击数加一
-            n_light_attack += 1
-        else:
-            if n_light_attack > 0:
-                # 轻棍第五段无法打出切手技
-                if n_light_attack % 5 != 0:
-                    resolute_strike = True
-            n_light_attack = 0
-        # 模拟行动输入
-        take_action(action, n_light_attack, time_delay_flag, resolute_strike)
+        if keyboard.is_pressed('n'):
+            break
+    logger.info("开始执行")
+    try:
+        # 测试模型
+        while True:
+            # 获取当前状态下需要采取的动作
+            img = get_game_screenshot()
+            state = img_to_state(img)
+            action = agent.choose_action(state, train_mode=False)
+            n_light_attack, resolute_strike = get_action_condition(action, n_light_attack)
+            # 模拟行为输入
+            take_action(action, n_light_attack, time_delay_flag, resolute_strike)
+            # 检查结束按键是否被按下
+            if keyboard.is_pressed('m'):
+                break
+    except KeyboardInterrupt:
+        logger.warning("用户中断，退出程序")
