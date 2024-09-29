@@ -8,11 +8,13 @@ SELF_BLOOD_X = 2
 SELF_BLOOD_Y = 980
 SELF_BLOOD_W = 336
 SELF_BLOOD_H = 18
+SELF_BLOOD_LEN = 334
 # 敌人血量框
 BOSS_BLOOD_X = 477
 BOSS_BLOOD_Y = 912
 BOSS_BLOOD_W = 578
 BOSS_BLOOD_H = 8
+BOSS_BLOOD_LEN = 578
 # --------------------------- 训练参数 ---------------------------
 # 经验缓冲池容量
 BUFFER_CAPACITY = 100
