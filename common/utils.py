@@ -19,11 +19,11 @@ from common import constants
 
 class Action(Enum):
     """行动枚举类"""
-    LIGHT_ATTACK = 0
-    HEAVY_ATTACK = 1
-    JUMP_LIGHT_ATTACK = 2
-    JUMP_HEAVY_ATTACK = 3
-    DODGE = 4
+    DODGE = 0
+    LIGHT_ATTACK = 1
+    HEAVY_ATTACK = 2
+    JUMP_LIGHT_ATTACK = 3
+    JUMP_HEAVY_ATTACK = 4
 
 
 class ReplayBuffer:
