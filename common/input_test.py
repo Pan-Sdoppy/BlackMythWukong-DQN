@@ -22,6 +22,7 @@ def on_click(_, __, button, pressed):
             left_click_pressed_time = None
 
 
-# 设置鼠标监听器监听点击事件
-with mouse.Listener(on_click=on_click) as listener:
-    listener.join()
+if __name__ == '__main__':
+    # 设置鼠标监听器监听点击事件
+    with mouse.Listener(on_click=on_click) as listener:
+        listener.join()
