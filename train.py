@@ -30,11 +30,11 @@ if __name__ == '__main__':
     # 导入权重
     load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
     # 等待开始按键被按下
-    logger.info("按下'n'键开始...")
+    logger.info("按下'n'键开始")
     while True:
-        if keyboard.is_pressed('n'):  # 如果按下's'键
-            break  # 跳出循环，开始执行
-    logger.info("开始执行...")
+        if keyboard.is_pressed('n'):
+            break
+    logger.info("开始执行")
     try:
         for i in range(constants.EPOCH):
             if interrupt_flag:
