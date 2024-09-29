@@ -20,7 +20,7 @@ if __name__ == '__main__':
                 learning_rate=constants.LR,
                 gamma=constants.GAMMA,
                 epsilon=constants.EPSILON,
-                target_update=constants.TARGET_UPDATE_FREQUENCY,
+                target_update_frequency=constants.TARGET_UPDATE_FREQUENCY,
                 device=device,
                 )
     # 导入权重
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             while True:
                 # 获取当前状态下需要采取的动作
                 resolute_strike = False
-                action = agent.choose_action(state)
+                action = agent.choose_action(state, train_mode=True)
                 if action == Action.LIGHT_ATTACK:
                     # 轻棍连击数加一
                     n_light_attack += 1

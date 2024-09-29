@@ -35,32 +35,34 @@ class DQN:
                  learning_rate: float,
                  gamma: float,
                  epsilon: float,
-                 target_update: int,
+                 target_update_frequency: int,
                  device: torch.device):
         self.n_hidden = n_hidden
         self.n_actions = n_actions
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.epsilon = epsilon
-        self.target_update = target_update
+        self.target_update = target_update_frequency
         self.device = device
         self.count = 0
         self.q_net = CNN(self.n_hidden, self.n_actions)
         self.target_q_net = CNN(self.n_hidden, self.n_actions)
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
 
-    def choose_action(self, state: torch.Tensor):
+    def choose_action(self, state: torch.Tensor, train_mode=True):
         """
         根据当前状态选择行动
-        :param state:
+        :param state: 模型输入
+        :param train_mode: 训练模式
         :return: 行动枚举值
         """
-        if np.random.random() < self.epsilon:
-            actions_value = self.q_net(state)
-            action = actions_value.argmax().item()
-        # 以 1 - self.epsilon 的概率随机选择某一行动
-        else:
-            action = np.random.randint(self.n_actions)
+        if train_mode:
+            # 只有训练模式以 1 - self.epsilon 的概率随机选择某一行动
+            if np.random.random() > self.epsilon:
+                action = np.random.randint(self.n_actions)
+                return action
+        actions_value = self.q_net(state)
+        action = actions_value.argmax().item()
         return action
 
     def train(self, transition_dict: dict):
