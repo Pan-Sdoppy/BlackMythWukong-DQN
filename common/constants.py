@@ -24,7 +24,7 @@ STATE_Y2 = 905
 DEBUG_MODE = True
 EPOCH = 50
 # 经验缓冲池容量
-BUFFER_CAPACITY = 100
+BUFFER_CAPACITY = 300
 # 学习率
 LR = 2e-3
 # 折扣因子
@@ -41,26 +41,26 @@ BUFFER_MIN_SIZE = 30
 N_ACTIONS = 5
 N_HIDDEN = 64 * 35 * 35
 LIGHT_ATTACK_TIME_SLEEP_DICT = {
-    1: [0.40, 0.00],
+    1: [0.55, 0.00],
     2: [0.80, 0.25],
     3: [0.80, 0.25],
     4: [1.30, 0.75],
     0: [1.30, 0.75],
 }
 HEAVY_ATTACK_TIME_SLEEP_DICT = {
-    0: [4.40, 3.85],
+    0: [3.15, 2.60],
     1: [1.50, 0.95],
 }
 DODGE_TIME_SLEEP_DICT = {
-    0: 0.70,
-    1: 0.15,
+    0: 0.55,
+    1: 0.00,
 }
 JUMP_LIGHT_ATTACK_SLEEP_DICT = {
-    0: 1.50,
-    1: 0.95,
+    0: 1.10,
+    1: 0.55,
 }
 JUMP_HEAVY_ATTACK_SLEEP_DICT = {
-    0: 3.00,
-    1: 2.45,
+    0: 1.65,
+    1: 1.10,
 }  # 角色跳至最高点时间
 JUMP_TIME = 0.3

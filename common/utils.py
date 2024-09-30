@@ -173,17 +173,17 @@ def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, nex
     # 突然大量回血代表回合结束
     if next_self_blood - self_blood > 800:
         # 回血前玩家血量少于14%判负
-        if self_blood <= 170:
+        if self_blood <= 200:
             reward -= 400
         else:
             reward += 400
         done = 1
     # 防止有时候玩家回血事件没被捕捉到
     elif next_boss_blood - boss_blood > 800:
-        if boss_blood <= 170:
-            reward -= 400
-        else:
+        if boss_blood <= 200:
             reward += 400
+        else:
+            reward -= 400
         done = 1
     else:
         if (self_blood - next_self_blood) > 0:

@@ -1,5 +1,4 @@
 import keyboard
-import matplotlib.pyplot as plt
 import torch
 from loguru import logger
 from tqdm import tqdm
@@ -7,14 +6,13 @@ from tqdm import tqdm
 from common import constants
 from common.nn import DQN
 from common.utils import ReplayBuffer, take_action, calculate_reward, save_model, get_state_and_blood, \
-    train_dqn, get_action_condition, save_debug_img
+    train_dqn, get_action_condition, save_debug_img, load_model
 
 if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # 记录第几次轻棍连击
     n_light_attack = 0
     time_delay_flag = False
-    return_list = []
     # 实例化经验池
     replay_buffer = ReplayBuffer(constants.BUFFER_CAPACITY)
     interrupt_flag = False
@@ -28,7 +26,7 @@ if __name__ == '__main__':
                 device=device,
                 )
     # 导入权重
-    # load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
+    load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
     # 等待开始按键被按下
     logger.info("按下'n'键开始")
     while True:
@@ -75,15 +73,8 @@ if __name__ == '__main__':
                         interrupt_flag = True
                         break  # 退出循环
                 # 记录每个回合的回报
-                return_list.append(epoch_return)
                 # 更新进度条信息
-                pbar.set_postfix({'得分': return_list[-1]})
+                pbar.set_postfix({'得分': epoch_return})
             save_model(agent.q_net, f'./model/YangJian_dqn_{str(i)}_epoch.pth')
-        # 绘图
-        plt.plot(range(len(return_list)), return_list)
-        plt.xlabel('回合数')
-        plt.ylabel('得分')
-        plt.title('DQN回合得分')
-        plt.show()
     except KeyboardInterrupt:
         logger.warning("用户中断，退出程序")
