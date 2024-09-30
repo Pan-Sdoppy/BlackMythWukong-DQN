@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 device=device,
                 )
     # 导入权重
-    load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
+    load_model(agent.q_net, r"./model/wukong_dqn_29_epoch.pth")
     # 等待开始按键被按下
     logger.info("按下'n'键开始")
     while True:
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             epoch_return = 0
             # 记录当前回合是否完成
             done = 0
-            with tqdm(total=1, desc='Iteration %d' % i) as pbar:
+            with tqdm(total=1, desc='第%d回合' %(i + 1)) as pbar:
                 while not done:
                     # 获取当前状态下需要采取的动作
                     action = agent.choose_action(state, train_mode=True)
