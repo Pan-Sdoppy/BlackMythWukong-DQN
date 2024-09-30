@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 from common import constants
 from common.nn import DQN
-from common.utils import ReplayBuffer, load_model, take_action, calculate_reward, save_model, get_state_and_blood, \
-    train_dqn, get_action_condition
+from common.utils import ReplayBuffer, take_action, calculate_reward, save_model, get_state_and_blood, \
+    train_dqn, get_action_condition, save_debug_img
 
 if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -28,7 +28,7 @@ if __name__ == '__main__':
                 device=device,
                 )
     # 导入权重
-    load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
+    # load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
     # 等待开始按键被按下
     logger.info("按下'n'键开始")
     while True:
@@ -40,12 +40,11 @@ if __name__ == '__main__':
             if interrupt_flag:
                 break
             # 截屏并获取玩家和敌人血量
-            state, self_blood, boss_blood = get_state_and_blood()
+            state, self_blood, boss_blood, _, _, _ = get_state_and_blood()
             # 记录每个回合的回报
             epoch_return = 0
             # 记录当前回合是否完成
             done = 0
-            # 打印训练进度，一共10回合
             with tqdm(total=1, desc='Iteration %d' % i) as pbar:
                 while not done:
                     # 获取当前状态下需要采取的动作
@@ -54,7 +53,7 @@ if __name__ == '__main__':
                     # 模拟行为输入
                     take_action(action, n_light_attack, time_delay_flag, resolute_strike)
                     # 获取下一个状态
-                    next_state, next_self_blood, next_boss_blood = get_state_and_blood()
+                    next_state, next_self_blood, next_boss_blood, img, self_blood_img, boss_blood_img = get_state_and_blood()
                     # 计算此次行为的奖励，以及当前回合是否结束
                     reward, done = calculate_reward(self_blood, next_self_blood, boss_blood, next_boss_blood)
                     # 此次行为添加到经验池
@@ -70,6 +69,8 @@ if __name__ == '__main__':
                     # 回合结束，进行下一轮训练
                     if done:
                         pbar.update(1)
+                        if constants.DEBUG_MODE:
+                            save_debug_img(img, self_blood_img, boss_blood_img)
                     if keyboard.is_pressed('m'):
                         interrupt_flag = True
                         break  # 退出循环
@@ -77,7 +78,7 @@ if __name__ == '__main__':
                 return_list.append(epoch_return)
                 # 更新进度条信息
                 pbar.set_postfix({'得分': return_list[-1]})
-            save_model(agent.q_net, f'./model/wukong_dqn_{str(i)}_epoch.pth')
+            save_model(agent.q_net, f'./model/YangJian_dqn_{str(i)}_epoch.pth')
         # 绘图
         plt.plot(range(len(return_list)), return_list)
         plt.xlabel('回合数')

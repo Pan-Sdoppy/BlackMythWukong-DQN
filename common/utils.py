@@ -1,6 +1,7 @@
 import collections
 import random
 import time
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Tuple
@@ -113,11 +114,11 @@ def get_blood_img(img: np.ndarray, self_mode: bool = True) -> np.ndarray:
     """
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if self_mode:
-        roi_img = gray_img[constants.SELF_BLOOD_Y:constants.SELF_BLOOD_Y + constants.SELF_BLOOD_H,
-                  constants.SELF_BLOOD_X:constants.SELF_BLOOD_X + constants.SELF_BLOOD_W].copy()
+        roi_img = gray_img[constants.SELF_BLOOD_Y1:constants.SELF_BLOOD_Y2,
+                  constants.SELF_BLOOD_X1:constants.SELF_BLOOD_X2].copy()
     else:
-        roi_img = gray_img[constants.BOSS_BLOOD_Y:constants.BOSS_BLOOD_Y + constants.BOSS_BLOOD_H,
-                  constants.BOSS_BLOOD_X:constants.BOSS_BLOOD_X + constants.BOSS_BLOOD_W].copy()
+        roi_img = gray_img[constants.BOSS_BLOOD_Y1:constants.BOSS_BLOOD_Y2,
+                  constants.BOSS_BLOOD_X1:constants.BOSS_BLOOD_X2].copy()
     return roi_img
 
 
@@ -145,16 +146,17 @@ def get_blood_value(roi_img: np.ndarray, denominator: int) -> int:
     :return: 血量占比
     """
     ret, threshold_image = cv2.threshold(roi_img, 150, 255, cv2.THRESH_BINARY)
+    # 寻找白色区域
     contours, _ = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     max_x = 0
     for cnt in contours:
         # cv2.boundingRect获取轮廓坐标
         x, y, w, h = cv2.boundingRect(cnt)
-        if x + w > max_x:
+        if x + w > max_x and x < denominator // 10:
             max_x = x + w
             if max_x > denominator:
                 max_x = denominator
-    return int(round((max_x / denominator), 2) * 100)
+    return int(round((max_x / denominator), 3) * 1000)
 
 
 def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, next_boss_blood: int) -> Tuple[int, int]:
@@ -169,19 +171,19 @@ def calculate_reward(self_blood: int, next_self_blood: int, boss_blood: int, nex
     reward = 0
     done = 0
     # 突然大量回血代表回合结束
-    if next_self_blood - self_blood > 70:
-        # 回血前玩家血量少于13%判负
-        if self_blood <= 13:
-            reward -= 40
+    if next_self_blood - self_blood > 800:
+        # 回血前玩家血量少于14%判负
+        if self_blood <= 170:
+            reward -= 400
         else:
-            reward += 40
+            reward += 400
         done = 1
     # 防止有时候玩家回血事件没被捕捉到
-    elif next_boss_blood - boss_blood > 70:
-        if boss_blood <= 13:
-            reward -= 40
+    elif next_boss_blood - boss_blood > 800:
+        if boss_blood <= 170:
+            reward -= 400
         else:
-            reward += 40
+            reward += 400
         done = 1
     else:
         if (self_blood - next_self_blood) > 0:
@@ -289,18 +291,19 @@ def img_to_state(img: np.ndarray) -> torch.Tensor:
     return state
 
 
-def get_state_and_blood() -> Tuple[torch.Tensor, int, int]:
+def get_state_and_blood() -> Tuple[torch.Tensor, int, int, np.ndarray, np.ndarray, np.ndarray]:
     """
     获取模型输入和血量信息
     :return: 模型输入和血量信息
     """
     img = get_game_screenshot()
-    state = img_to_state(img)
+    img_copy = img[constants.STATE_Y1:constants.STATE_Y2, constants.STATE_X1:constants.STATE_X2].copy()
+    state = img_to_state(img_copy)
     self_blood_img = get_blood_img(img, self_mode=True)
     self_blood = get_blood_value(self_blood_img, constants.SELF_BLOOD_LEN)
     boss_blood_img = get_blood_img(img, self_mode=False)
     boss_blood = get_blood_value(boss_blood_img, constants.BOSS_BLOOD_LEN)
-    return state, self_blood, boss_blood
+    return state, self_blood, boss_blood, img, self_blood_img, boss_blood_img
 
 
 def train_dqn(agent: common.nn.DQN, replay_buffer: ReplayBuffer):
@@ -334,7 +337,7 @@ def get_action_condition(action: int, n_light_attack: int) -> Tuple[int, bool]:
     :return: 轻棍连击次数和是否使出切手技
     """
     resolute_strike = False
-    if action == Action.LIGHT_ATTACK:
+    if action == Action.LIGHT_ATTACK.value:
         # 轻棍连击数加一
         n_light_attack += 1
     else:
@@ -343,3 +346,28 @@ def get_action_condition(action: int, n_light_attack: int) -> Tuple[int, bool]:
             if n_light_attack % 5 != 0:
                 resolute_strike = True
     return n_light_attack, resolute_strike
+
+
+def get_time() -> str:
+    """
+    获取当前时间
+    :return: 格式化时间字符串
+    """
+    now = datetime.now()
+    formatted_time = now.strftime("%Y_%m_%d_%H_%M_%S_%f")
+    return formatted_time
+
+
+def save_debug_img(img: np.ndarray, self_blood_img: np.ndarray, boss_blood_img: np.ndarray):
+    path_obj = Path(r"./debug")
+    parent_dir = path_obj
+    # 如果父目录不存在，则创建它
+    if not parent_dir.exists():
+        parent_dir.mkdir(parents=True, exist_ok=True)
+    now = get_time()
+    img_path = f"./debug/{now}_img.jpg"
+    self_blood_img_path = f"./debug/{now}_self_blood_img.jpg"
+    boss_blood_img_path = f"./debug/{now}_boss_blood_img.jpg"
+    save_img(img, img_path)
+    save_img(self_blood_img, self_blood_img_path)
+    save_img(boss_blood_img, boss_blood_img_path)

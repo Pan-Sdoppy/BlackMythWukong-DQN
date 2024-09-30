@@ -1,21 +1,27 @@
 # --------------------------- 截图参数 ---------------------------
 # 屏幕截图区域
-MONITOR_ROI = {"top": 0, "left": 2126, "width": 1204, "height": 999}
+MONITOR_ROI = {"top": 0, "left": 2128, "width": 1500, "height": 994}
 # 血量二值化阈值
 THRESHOLD = 50
 # 玩家血量框
-SELF_BLOOD_X = 2
-SELF_BLOOD_Y = 980
-SELF_BLOOD_W = 336
-SELF_BLOOD_H = 18
-SELF_BLOOD_LEN = 334
+SELF_BLOOD_X1 = 0
+SELF_BLOOD_Y1 = 981
+SELF_BLOOD_X2 = 298
+SELF_BLOOD_Y2 = 994
+SELF_BLOOD_LEN = SELF_BLOOD_X2 - SELF_BLOOD_X1
 # 敌人血量框
-BOSS_BLOOD_X = 477
-BOSS_BLOOD_Y = 912
-BOSS_BLOOD_W = 578
-BOSS_BLOOD_H = 8
-BOSS_BLOOD_LEN = 578
+BOSS_BLOOD_X1 = 475
+BOSS_BLOOD_Y1 = 913
+BOSS_BLOOD_X2 = 1054
+BOSS_BLOOD_Y2 = 916
+BOSS_BLOOD_LEN = BOSS_BLOOD_X2 - BOSS_BLOOD_X1
+# 输入截图区域
+STATE_X1 = 314
+STATE_Y1 = 0
+STATE_X2 = 1219
+STATE_Y2 = 905
 # --------------------------- 训练参数 ---------------------------
+DEBUG_MODE = True
 EPOCH = 50
 # 经验缓冲池容量
 BUFFER_CAPACITY = 100
