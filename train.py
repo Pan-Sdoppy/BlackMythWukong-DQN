@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 device=device,
                 )
     # 导入权重
-    load_model(agent.q_net, r"./model/wukong_dqn_29_epoch.pth")
+    # load_model(agent.q_net, r"./model/wukong_dqn_9_epoch.pth")
     # 等待开始按键被按下
     logger.info("按下'n'键开始")
     while True:
@@ -62,8 +62,11 @@ if __name__ == '__main__':
                     boss_blood = next_boss_blood
                     # 更新回合回报
                     epoch_return += reward
-                    # 当经验池超过一定数量后，开始训练网络
-                    train_dqn(agent, replay_buffer)
+                    if replay_buffer.size() > constants.BUFFER_MIN_SIZE:
+                        # 开始出现操作延迟
+                        time_delay_flag = True
+                        # 当经验池超过一定数量后，开始训练网络
+                        train_dqn(agent, replay_buffer)
                     # 回合结束，进行下一轮训练
                     if done:
                         pbar.update(1)
@@ -75,6 +78,6 @@ if __name__ == '__main__':
                 # 记录每个回合的回报
                 # 更新进度条信息
                 pbar.set_postfix({'得分': epoch_return})
-            save_model(agent.q_net, f'./model/YangJian_dqn_{str(i)}_epoch.pth')
+            save_model(agent.q_net, f'./model/BaiYi_dqn_{str(i)}_epoch.pth')
     except KeyboardInterrupt:
         logger.warning("用户中断，退出程序")

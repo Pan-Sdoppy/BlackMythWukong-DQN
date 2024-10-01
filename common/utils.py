@@ -303,7 +303,7 @@ def get_state_and_blood() -> Tuple[torch.Tensor, int, int, np.ndarray, np.ndarra
     self_blood = get_blood_value(self_blood_img, constants.SELF_BLOOD_LEN)
     boss_blood_img = get_blood_img(img, self_mode=False)
     boss_blood = get_blood_value(boss_blood_img, constants.BOSS_BLOOD_LEN)
-    return state, self_blood, boss_blood, img, self_blood_img, boss_blood_img
+    return state, self_blood, boss_blood, img_copy, self_blood_img, boss_blood_img
 
 
 def train_dqn(agent: common.nn.DQN, replay_buffer: ReplayBuffer):

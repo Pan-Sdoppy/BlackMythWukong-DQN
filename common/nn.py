@@ -3,6 +3,12 @@ import torch
 import torch.nn.functional as f
 from torch import nn
 
+# 设置随机种子
+seed = 89
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(seed)
+
 
 class CNN(nn.Module):
     """默认期望输入形状 (n, 3, 308, 308)，其中 n 为批大小"""
