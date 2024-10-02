@@ -283,7 +283,8 @@ def img_to_state(img: np.ndarray) -> torch.Tensor:
     transform = transforms.Compose([
         transforms.Resize((308, 308)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        # BGR
+        transforms.Normalize(mean=[0.406, 0.456, 00.485], std=[0.225, 0.224, 0.229])
     ])
     # 应用转换
     image = transform(image_pil)
@@ -345,6 +346,7 @@ def get_action_condition(action: int, n_light_attack: int) -> Tuple[int, bool]:
             # 轻棍第五段无法打出切手技
             if n_light_attack % 5 != 0:
                 resolute_strike = True
+        n_light_attack = 0
     return n_light_attack, resolute_strike
 
 

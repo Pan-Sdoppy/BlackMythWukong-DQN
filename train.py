@@ -78,6 +78,6 @@ if __name__ == '__main__':
                 # 记录每个回合的回报
                 # 更新进度条信息
                 pbar.set_postfix({'得分': epoch_return})
-            save_model(agent.q_net, f'./model/BaiYi_dqn_{str(i)}_epoch.pth')
+            save_model(agent.q_net, f'./model/YangJian_dqn_{str(i)}_epoch.pth')
     except KeyboardInterrupt:
         logger.warning("用户中断，退出程序")
