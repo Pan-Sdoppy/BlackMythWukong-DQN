@@ -82,7 +82,7 @@ def load_model(model: common.nn.CNN, path: str):
     :param model: 模型
     :param path: 权重文件路径
     """
-    model.load_state_dict(torch.load(path))
+    model.load_state_dict(torch.load(path, weights_only=True))
 
 
 def save_img(image: np.ndarray, img_path: str):

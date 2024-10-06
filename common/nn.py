@@ -52,7 +52,9 @@ class DQN:
         self.device = device
         self.count = 0
         self.q_net = CNN(self.n_hidden, self.n_actions)
+        self.q_net = self.q_net.to(self.device)
         self.target_q_net = CNN(self.n_hidden, self.n_actions)
+        self.target_q_net = self.target_q_net.to(self.device)
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
 
     def choose_action(self, state: torch.Tensor, train_mode=True):
@@ -77,11 +79,11 @@ class DQN:
         :param transition_dict: 经验缓冲池抽取的随机采样
         """
         # 从字典中提取并处理状态、动作、奖励、下一个状态和完成标志
-        states = transition_dict['states'].clone().detach().to(dtype=torch.float)
-        actions = torch.tensor(transition_dict['actions']).view(-1, 1)
-        rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1)
-        next_states = transition_dict['next_states'].clone().detach().to(dtype=torch.float)
-        dones = torch.tensor(transition_dict['dones'], dtype=torch.float).view(-1, 1)
+        states = transition_dict['states'].clone().detach().to(dtype=torch.float).to(self.device)
+        actions = torch.tensor(transition_dict['actions']).view(-1, 1).to(self.device)
+        rewards = torch.tensor(transition_dict['rewards'], dtype=torch.float).view(-1, 1).to(self.device)
+        next_states = transition_dict['next_states'].clone().detach().to(dtype=torch.float).to(self.device)
+        dones = torch.tensor(transition_dict['dones'], dtype=torch.float).view(-1, 1).to(self.device)
         # 计算当前状态下，根据当前策略选择特定动作的Q值
         q_values = self.q_net(states).gather(1, actions)
         # 使用目标网络计算下一个状态的最大Q值
