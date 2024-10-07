@@ -129,7 +129,7 @@ def get_game_screenshot() -> np.ndarray:
     """
     with mss.mss() as sct:
         # 获取屏幕截图
-        screenshot = sct.grab(constants.MONITOR_ROI)
+        screenshot = sct.grab(constants.SNAKE_ROI)
         # 将截图转换为OpenCV格式
         img = np.array(screenshot)
         # OpenCV默认使用BGR颜色空间，mss返回的是BGRA，

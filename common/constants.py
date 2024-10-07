@@ -1,6 +1,8 @@
 # --------------------------- 截图参数 ---------------------------
 # 屏幕截图区域
-MONITOR_ROI = {"top": 0, "left": 2128, "width": 1500, "height": 994}
+BLACK_MYTH_ROI = {"top": 0, "left": 2128, "width": 1500, "height": 994}
+# 屏幕截图区域
+SNAKE_ROI = {"top": 290, "left": 710, "width": 500, "height": 500}
 # 血量二值化阈值
 THRESHOLD = 50
 # 玩家血量框
@@ -24,17 +26,17 @@ STATE_Y2 = 993
 DEBUG_MODE = True
 EPOCH = 100
 # 经验缓冲池容量
-BUFFER_CAPACITY = 5000
+BUFFER_CAPACITY = 500
 # 学习率
 LR = 2e-3
 # 折扣因子
 GAMMA = 0.9
 # 贪心系数
-EPSILON = 0.9
+EPSILON = 0.99
 # 目标网络更新频率
 TARGET_UPDATE_FREQUENCY = 200
 # 批大小
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 # 经验池最小训练大小
 BUFFER_MIN_SIZE = 200
 # 行为数
